@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.schemas.user_schema import UserCreate, UserLogin, UserResponse
 from app.services.auth_service import register_user, login_user
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @router.post("/register", response_model=dict)
 async def register(data: UserCreate):
@@ -19,7 +19,11 @@ async def register(data: UserCreate):
 
 @router.post("/login")
 async def login(data: UserLogin):
-    token = await login_user(data.email, data.password)
-    if not token:
+    print(data,"data")
+    result = await login_user(data.email, data.password, data.userType)
+    print(result,"result")
+    if not result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"access_token": token, "token_type": "bearer"}
+    token = result["token"]
+    user = result["user"]
+    return {"access_token": token, "token_type": "bearer", "user": user}    
